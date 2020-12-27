@@ -23,7 +23,7 @@ class GMM_model():
         for i in range(component_num):
             # self.gaussModelParam.append([random.uniform(0,1), random.uniform(1,2)]) # init miu and sigma
             # self.gaussModelParam.append([random.uniform(0,1), random.uniform(1,2), 1./3]) # init miu, sigma and alpha
-            self.gaussModelParam[i, :] = np.array([random.uniform(0,1), random.uniform(1,2), 1./3])
+            self.gaussModelParam[i, :] = np.array([random.uniform(0,1), random.uniform(0,0.5), 0.5])
 
     def difference(self, previousParam)->float:
         # for i in range(len(self.gaussModelParam)):
@@ -56,7 +56,6 @@ class GMM_model():
                 miu_sum_up = 0.
                 miu_sum_down = 0.
                 sigma_sum_up = 0.
-                alpha_sum_down = len(x)
                 for j in range(len(x)):
                     miu_sum_up += self.gamma_hat[j][k] * x[j]
                     miu_sum_down += self.gamma_hat[j][k]
@@ -65,9 +64,9 @@ class GMM_model():
                 alpha_sum_up = miu_sum_down
                 self.gaussModelParam[k][0] = miu_sum_up / miu_sum_down
                 self.gaussModelParam[k][1] = (sigma_sum_up / sigma_sum_down)**0.5
-                self.gaussModelParam[k][2] = alpha_sum_up / alpha_sum_down
+                self.gaussModelParam[k][2] = alpha_sum_up / len(x)
             diff = self.difference(paramPre)
-            print('Iteration Num = %d' % iter_num)
+            print('Iter = %d, diff = %f' % (iter_num,diff))
         print('Prediction finished!')
 
 
@@ -93,10 +92,10 @@ clustering = np.copy(gmm.gamma_hat)
 classification = np.zeros((img.shape[0], img.shape[1]))
 for i in range(img.shape[0]):
     for j in range(img.shape[1]):
-        if(clustering[i*j][0] > 0.5):
+        if(clustering[i*img.shape[1] + j][0] > 0.5):
             classification[i][j] = 0
         else:
-            classification[i][j] = 255
+            classification[i][j] = 1
 
 from matplotlib import pyplot as plt
 # show results
